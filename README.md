@@ -1,11 +1,24 @@
-<div align="center">
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+# ⚽ GameStream AI - eFootball Live Tanzania
 
-  <h1>Built with AI Studio</h2>
+App ya kisasa inayoruhusu watumiaji kurusha mechi zao za eFootball Live na kupata uchambuzi wa papo hapo kutoka kwa **Adam AI** (Gemini AI).
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+## 🔥 Vipengele (Features)
+- **Live Match Ticker**: Bar inayotembea chini inayonyesha matokeo ya mechi zinazoendelea.
+- **Adam AI Commentary**: Uchambuzi wa picha za game kwa kutumia akili mnemba (AI) ya Gemini.
+- **Game Center**: Michezo ya bahati (Penalty Shootout) ya kushinda Coins.
+- **Global Chat**: Kijiwe cha wadau wa soka na msaada kutoka kwa AI.
+- **Admin Panel**: Udhibiti kamili wa matangazo (Ads) na bei za Coins.
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+## 🛠️ Teknolojia Zilizotumika
+- **React 19** & **TypeScript**
+- **Tailwind CSS** kwa urembo
+- **Google Gemini API** (Gemini 3 Flash) kwa uchambuzi wa mechi
+- **Lucide React** icons
 
-</div>
+## 🚀 Jinsi ya Kuanza
+1. Pakua (Clone) repository hii.
+2. Fungua `index.html` kwenye browser yoyote ya kisasa.
+3. Hakikisha una API KEY ya Gemini ili AI ifanye kazi.
+
+**Imeundwa na Adam AD kwa ajili ya Gamers wa Tanzania.**

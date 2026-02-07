@@ -1,0 +1,8 @@
+{
+  "name": "GameStream AI - eFootball Live",
+  "description": "A professional gaming stream platform where users can share their screen (like eFootball) and viewers get AI-powered live commentary using Gemini.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
