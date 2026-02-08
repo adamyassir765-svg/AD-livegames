@@ -1,7 +1,8 @@
+
 {
-  "name": "GameStream AI - Adam AD",
-  "short_name": "GameStream",
-  "description": "eFootball Live Streaming & AI Commentary Tanzania",
+  "name": "AD Stream - eFootball Live",
+  "short_name": "AD Stream",
+  "description": "eFootball Live Streaming & AI Commentary Tanzania by Adam AD",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0f172a",

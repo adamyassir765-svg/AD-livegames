@@ -1,13 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Trophy, ChevronRight, BellRing, Radio, Sparkles, Coins, Zap, ShieldAlert, Smartphone, X } from 'lucide-react';
+import { Play, Trophy, ChevronRight, BellRing, Radio, Sparkles, Coins, Zap, ShieldAlert, Smartphone, X, Download } from 'lucide-react';
 import { StreamSession, AppConfig, UserAccount, Language } from '../types';
 import AdTicker from '../components/AdTicker';
 import GlobalChat from '../components/GlobalChat';
 import { t } from '../translations';
 
-// Define HomeProps interface to fix missing type error
 interface HomeProps {
   config: AppConfig;
   user: UserAccount;
@@ -18,16 +17,30 @@ const Home: React.FC<HomeProps> = ({ config, user, lang }) => {
   const navigate = useNavigate();
   const [activeMatch, setActiveMatch] = useState<StreamSession | null>(null);
   const [showInstallTip, setShowInstallTip] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isIPhone, setIsIPhone] = useState(false);
 
   useEffect(() => {
-    // Check if the app is already running in standalone mode
+    // Detect if running as standalone PWA
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    
+    // Check for iPhone
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIPhone(isIOS);
+
     if (!isStandalone) {
       const hasDismissed = localStorage.getItem('gs_install_dismissed');
       if (!hasDismissed) {
         setShowInstallTip(true);
       }
     }
+
+    // Capture the install prompt for Android/Chrome
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallTip(true);
+    });
 
     const checkActiveMatch = () => {
       try {
@@ -46,6 +59,19 @@ const Home: React.FC<HomeProps> = ({ config, user, lang }) => {
     return () => clearInterval(interval);
   }, []);
 
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setShowInstallTip(false);
+      }
+      setDeferredPrompt(null);
+    } else if (isIPhone) {
+      alert(t(lang, 'iphoneTip'));
+    }
+  };
+
   const dismissInstallTip = () => {
     setShowInstallTip(false);
     localStorage.setItem('gs_install_dismissed', 'true');
@@ -53,21 +79,40 @@ const Home: React.FC<HomeProps> = ({ config, user, lang }) => {
 
   return (
     <div className="space-y-8 md:space-y-16 animate-in fade-in duration-700">
-      {/* Install App Tip */}
+      {/* Enhanced PWA Install Banner */}
       {showInstallTip && (
-        <div className="bg-blue-600 p-4 rounded-3xl border border-blue-400 shadow-2xl flex items-center justify-between gap-4 animate-in slide-in-from-top-full">
-          <div className="flex items-center gap-3">
-            <div className="bg-white/20 p-2 rounded-xl">
-              <Smartphone size={20} className="text-white" />
+        <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 to-indigo-800 p-6 rounded-[32px] border-4 border-white/20 shadow-2xl animate-in slide-in-from-top-full duration-500">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl rounded-full -mr-10 -mt-10" />
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
+            <div className="flex items-center gap-5">
+              <div className="bg-white p-3 rounded-2xl shadow-xl flex-shrink-0">
+                <Smartphone size={32} className="text-blue-600" />
+              </div>
+              <div className="text-center sm:text-left">
+                <h4 className="text-xl font-black text-white uppercase tracking-tighter leading-none mb-1">
+                  {t(lang, 'installApp')}
+                </h4>
+                <p className="text-blue-100 text-xs font-medium max-w-xs">
+                  {t(lang, 'installDesc')}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs font-black text-white uppercase tracking-tight">Tumia kama App!</p>
-              <p className="text-[10px] text-blue-100 font-medium">Bonyeza 'nukta tatu' au 'share' kisha chagua "Add to Home Screen".</p>
+            
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <button 
+                onClick={handleInstallClick}
+                className="flex-1 sm:flex-none bg-white text-blue-700 font-black py-4 px-8 rounded-2xl text-xs uppercase tracking-widest hover:bg-blue-50 transition-all flex items-center justify-center gap-2 shadow-xl"
+              >
+                <Download size={18} /> {t(lang, 'installButton')}
+              </button>
+              <button 
+                onClick={dismissInstallTip} 
+                className="p-4 bg-black/20 hover:bg-black/40 rounded-2xl text-white transition-all"
+              >
+                <X size={20} />
+              </button>
             </div>
           </div>
-          <button onClick={dismissInstallTip} className="p-2 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white">
-            <X size={18} />
-          </button>
         </div>
       )}
 
@@ -85,7 +130,7 @@ const Home: React.FC<HomeProps> = ({ config, user, lang }) => {
           </div>
           <h2 className="text-5xl md:text-9xl font-black text-white leading-[0.85] tracking-tighter uppercase">
             {t(lang, 'heroTitle1')} <span className="text-blue-600">{t(lang, 'heroTitle2')}</span><br className="hidden md:block"/>
-            ADAM <span className="text-indigo-500 underline decoration-indigo-500/30">AD.</span>
+            AD <span className="text-indigo-500 underline decoration-indigo-500/30">STREAM.</span>
           </h2>
           <p className="text-slate-400 text-lg md:text-2xl font-medium max-w-xl leading-relaxed mx-auto lg:mx-0">
             {t(lang, 'heroDesc')}

@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GameStream AI - eFootball Live</title>
+    <title>AD Stream - eFootball Live</title>
     
     <!-- PWA Metadata -->
     <link rel="manifest" href="./manifest.json">
@@ -11,7 +12,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="GameStream">
+    <meta name="apple-mobile-web-app-title" content="AD Stream">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/5041/5041071.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -39,6 +40,12 @@
         }
         .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
         
+        .gradient-bg {
+            background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.1), transparent),
+                        radial-gradient(circle at bottom left, rgba(79, 70, 229, 0.1), transparent),
+                        #0f172a;
+        }
+
         /* Professional Splash Loader */
         #loading-screen {
             position: fixed;
@@ -90,12 +97,12 @@
     </script>
 </head>
 <body>
-    <!-- Initial Loading Screen to prevent "Launch" text issue -->
+    <!-- Initial Loading Screen -->
     <div id="loading-screen">
         <div class="loader-ball">
             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.4"/><path d="M10.6 13.4c-1.2-1.2-1.2-3.1 0-4.2"/><path d="M13.4 10.6c1.2 1.2 1.2 3.1 0 4.2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.4"/><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/><circle cx="12" cy="12" r="1"/></svg>
         </div>
-        <div class="loading-text">Adam AD Stream Loading...</div>
+        <div class="loading-text">AD Stream Loading...</div>
     </div>
 
     <div id="root"></div>

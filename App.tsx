@@ -144,7 +144,7 @@ const App: React.FC = () => {
 
   function getDefaultConfig(): AppConfig {
     return {
-      appName: 'GAMESTREAM AD',
+      appName: 'AD STREAM',
       appTagline: 'eFootball Live Tanzania • Adam AD',
       ownerName: 'Adam AD',
       currency: 'TZS',
@@ -160,7 +160,7 @@ const App: React.FC = () => {
         { id: '3', amount: 100, price: 35000 }
       ],
       ads: [
-        { id: 'ad1', title: 'Pata Coins za Bure @ Penalty Center!', imageUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800', whatsappNumber: '255792414837' }
+        { id: 'ad1', title: 'Pata Coins za Bure @ AD STREAM!', imageUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800', whatsappNumber: '255792414837' }
       ]
     };
   }
