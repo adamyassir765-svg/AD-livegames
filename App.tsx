@@ -39,7 +39,6 @@ const MainLayout: React.FC<{
       if (activeMatchStr) {
         try {
           const match = JSON.parse(activeMatchStr);
-          // Only show if it is actually live
           if (match && match.isLive) {
             setLiveStreams([match]);
           } else {
@@ -53,7 +52,6 @@ const MainLayout: React.FC<{
       }
     };
     updateStreams();
-    // Listen for storage changes across tabs
     window.addEventListener('storage', updateStreams);
     const interval = setInterval(updateStreams, 3000);
     return () => {
@@ -90,9 +88,7 @@ const MainLayout: React.FC<{
         </Routes>
       </main>
 
-      {/* Ticker for all matches */}
       <MatchTicker streams={liveStreams} lang={lang} />
-
       {showHeader && <WhatsAppButton config={config} />}
     </div>
   );
@@ -126,24 +122,25 @@ const App: React.FC = () => {
 
       const saved = localStorage.getItem(USER_KEY);
       if (!saved) {
-        // Initial setup - default to visitor
-        const newUser: UserAccount = {
-          id: 'user-' + Math.random().toString(36).substr(2, 9),
-          username: 'Shabiki-' + Math.floor(Math.random() * 9999),
-          coins: 2, // 2 free coins to start
-          status: 'active',
-          expiryDate: '2025-12-31',
-          isSubAdmin: false,
-          isAdmin: false
-        };
-        return newUser;
+        return createNewUser();
       }
-      
       return JSON.parse(saved);
     } catch (e) {
-      return getAdminUser();
+      return createNewUser();
     }
   });
+
+  function createNewUser(): UserAccount {
+    return {
+      id: 'user-' + Math.random().toString(36).substr(2, 9),
+      username: 'Shabiki-' + Math.floor(Math.random() * 9999),
+      coins: 2,
+      status: 'active',
+      expiryDate: '2025-12-31',
+      isSubAdmin: false,
+      isAdmin: false
+    };
+  }
 
   function getDefaultConfig(): AppConfig {
     return {
@@ -206,15 +203,17 @@ const App: React.FC = () => {
 
   const handleAdminLogin = (password: string) => {
     if (password === 'adam2025') {
-      setUser(getAdminUser());
+      const admin = getAdminUser();
       localStorage.setItem('gs_admin_auth', 'true');
       localStorage.removeItem('gs_subadmin_auth');
+      setUser(admin);
       return true;
     }
     if (password === 'sub2025') {
-      setUser(getSubAdminUser());
+      const sub = getSubAdminUser();
       localStorage.setItem('gs_subadmin_auth', 'true');
       localStorage.removeItem('gs_admin_auth');
+      setUser(sub);
       return true;
     }
     return false;

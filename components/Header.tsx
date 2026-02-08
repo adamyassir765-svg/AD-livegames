@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Radio, ShieldCheck, Database, LayoutGrid, LogOut, Coins, Target, Languages } from 'lucide-react';
+import { Radio, ShieldCheck, Database, LayoutGrid, LogOut, Coins, Target, Languages, UserCircle } from 'lucide-react';
 import { UserAccount, AppConfig, Language } from '../types';
 import { t } from '../translations';
 
@@ -39,9 +39,10 @@ const Header: React.FC<HeaderProps> = ({ user, config, lang, setLang, onLogout }
           <h1 className="text-sm md:text-lg font-black text-white tracking-tighter leading-none">
             {config.appName}
           </h1>
-          <p className="text-[8px] md:text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+          {/* Secret link for Admin to Login */}
+          <Link to="/admin-login" className="text-[8px] md:text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 hover:text-blue-500 transition-colors">
             BY {config.ownerName}
-          </p>
+          </Link>
         </div>
       </Link>
 
@@ -70,7 +71,7 @@ const Header: React.FC<HeaderProps> = ({ user, config, lang, setLang, onLogout }
         {/* Language Switcher */}
         <button 
           onClick={toggleLang}
-          className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-2 rounded-xl text-[10px] font-black uppercase text-slate-300 hover:bg-white/10 transition-all active:scale-95"
+          className="hidden sm:flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-2 rounded-xl text-[10px] font-black uppercase text-slate-300 hover:bg-white/10 transition-all active:scale-95"
         >
           <Languages size={14} className="text-blue-500" />
           {lang === 'sw' ? 'SW' : 'EN'}
@@ -83,9 +84,13 @@ const Header: React.FC<HeaderProps> = ({ user, config, lang, setLang, onLogout }
           </div>
         </Link>
         
-        {(user.isAdmin || user.isSubAdmin) && (
+        {!(user.isAdmin || user.isSubAdmin) ? (
+          <Link to="/admin-login" className="p-2 rounded-xl bg-white/5 text-slate-500 hover:text-white transition-all border border-white/5">
+            <UserCircle size={18} />
+          </Link>
+        ) : (
           <div className="flex items-center gap-2">
-            <Link to="/admin" className="p-2 rounded-xl bg-slate-800/50 text-slate-400 hover:text-white transition-all border border-white/5">
+            <Link to="/admin" className="p-2 rounded-xl bg-blue-600/20 text-blue-500 hover:bg-blue-600 hover:text-white transition-all border border-blue-500/30">
               <ShieldCheck size={18} />
             </Link>
             <button 

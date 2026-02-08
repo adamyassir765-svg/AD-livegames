@@ -1,18 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Trophy, ChevronRight, BellRing, Radio, Sparkles, Coins, Zap, ShieldAlert } from 'lucide-react';
+import { Play, Trophy, ChevronRight, BellRing, Radio, Sparkles, Coins, Zap, ShieldAlert, Smartphone, X } from 'lucide-react';
 import { StreamSession, AppConfig, UserAccount, Language } from '../types';
 import AdTicker from '../components/AdTicker';
 import GlobalChat from '../components/GlobalChat';
 import { t } from '../translations';
 
-const MOCK_STREAMS: StreamSession[] = [
-  { id: '2', broadcasterName: 'GamingKing_TZ', gameTitle: 'Friendly Match: Tanzania vs Nigeria', viewerCount: 850, thumbnailUrl: '', isLive: true },
-  { id: '3', broadcasterName: 'ProPlayer_X', gameTitle: 'Ranked Division 1 Climb', viewerCount: 3200, thumbnailUrl: '', isLive: true },
-  { id: '4', broadcasterName: 'CoachSam', gameTitle: 'Tactic Breakdown & Training', viewerCount: 45, thumbnailUrl: '', isLive: true },
-];
-
+// Define HomeProps interface to fix missing type error
 interface HomeProps {
   config: AppConfig;
   user: UserAccount;
@@ -22,8 +17,18 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ config, user, lang }) => {
   const navigate = useNavigate();
   const [activeMatch, setActiveMatch] = useState<StreamSession | null>(null);
+  const [showInstallTip, setShowInstallTip] = useState(false);
 
   useEffect(() => {
+    // Check if the app is already running in standalone mode
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    if (!isStandalone) {
+      const hasDismissed = localStorage.getItem('gs_install_dismissed');
+      if (!hasDismissed) {
+        setShowInstallTip(true);
+      }
+    }
+
     const checkActiveMatch = () => {
       try {
         const saved = localStorage.getItem('gs_active_match');
@@ -41,8 +46,31 @@ const Home: React.FC<HomeProps> = ({ config, user, lang }) => {
     return () => clearInterval(interval);
   }, []);
 
+  const dismissInstallTip = () => {
+    setShowInstallTip(false);
+    localStorage.setItem('gs_install_dismissed', 'true');
+  };
+
   return (
     <div className="space-y-8 md:space-y-16 animate-in fade-in duration-700">
+      {/* Install App Tip */}
+      {showInstallTip && (
+        <div className="bg-blue-600 p-4 rounded-3xl border border-blue-400 shadow-2xl flex items-center justify-between gap-4 animate-in slide-in-from-top-full">
+          <div className="flex items-center gap-3">
+            <div className="bg-white/20 p-2 rounded-xl">
+              <Smartphone size={20} className="text-white" />
+            </div>
+            <div>
+              <p className="text-xs font-black text-white uppercase tracking-tight">Tumia kama App!</p>
+              <p className="text-[10px] text-blue-100 font-medium">Bonyeza 'nukta tatu' au 'share' kisha chagua "Add to Home Screen".</p>
+            </div>
+          </div>
+          <button onClick={dismissInstallTip} className="p-2 hover:bg-white/10 rounded-full transition-all text-white/50 hover:text-white">
+            <X size={18} />
+          </button>
+        </div>
+      )}
+
       <div className="w-full -mt-4">
         <AdTicker ads={config.ads} />
       </div>
