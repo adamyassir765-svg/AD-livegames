@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
@@ -13,26 +14,24 @@ window.onerror = (message, source, lineno, colno, error) => {
   return false;
 };
 
-// Register Service Worker with clean refresh logic
+// Fixed Service Worker registration logic
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js', { scope: './' })
-      .then(registration => {
-        // Look for updates to the service worker
-        registration.onupdatefound = () => {
-          const installingWorker = registration.installing;
-          if (installingWorker) {
-            installingWorker.onstatechange = () => {
-              if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('New content available; please refresh.');
-              }
-            };
-          }
-        };
-      })
-      .catch(err => {
-        console.error('ServiceWorker registration failed:', err);
-      });
+    // Only register if we are on a secure origin and not in a restricted preview environment
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const isHttps = window.location.protocol === 'https:';
+    
+    // Using a simple relative path './sw.js' is safer for most environments
+    if (isHttps || isLocalhost) {
+      navigator.serviceWorker.register('./sw.js', { scope: './' })
+        .then(registration => {
+          console.log('AD Stream SW Registered successfully');
+        })
+        .catch(err => {
+          // Log only warning to not trigger error overlays in preview modes
+          console.warn('PWA ServiceWorker registration skipped:', err.message);
+        });
+    }
   });
 }
 

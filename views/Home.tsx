@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Trophy, ChevronRight, BellRing, Radio, Sparkles, Coins, Zap, ShieldAlert, Smartphone, X, Download } from 'lucide-react';
+import { Play, Trophy, ChevronRight, BellRing, Radio, Sparkles, Coins, Zap, ShieldAlert, Smartphone, X, Download, Share, CheckCircle2 } from 'lucide-react';
 import { StreamSession, AppConfig, UserAccount, Language } from '../types';
 import AdTicker from '../components/AdTicker';
 import GlobalChat from '../components/GlobalChat';
@@ -16,31 +16,39 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ config, user, lang }) => {
   const navigate = useNavigate();
   const [activeMatch, setActiveMatch] = useState<StreamSession | null>(null);
-  const [showInstallTip, setShowInstallTip] = useState(false);
+  const [showInstallOverlay, setShowInstallOverlay] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isIPhone, setIsIPhone] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
-    // Detect if running as standalone PWA
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone;
+    // Detect Standalone mode (if already installed)
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+    setIsStandalone(standalone);
     
-    // Check for iPhone
+    // Check for iPhone/iOS
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     setIsIPhone(isIOS);
 
-    if (!isStandalone) {
-      const hasDismissed = localStorage.getItem('gs_install_dismissed');
+    // Show overlay if not already installed and not dismissed in this session
+    if (!standalone) {
+      const hasDismissed = sessionStorage.getItem('ad_stream_install_dismissed');
       if (!hasDismissed) {
-        setShowInstallTip(true);
+        // Show immediately to get user's attention as requested
+        setShowInstallOverlay(true);
       }
     }
 
-    // Capture the install prompt for Android/Chrome
-    window.addEventListener('beforeinstallprompt', (e) => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
+      // Stash the event so it can be triggered later.
       setDeferredPrompt(e);
-      setShowInstallTip(true);
-    });
+      // Ensure overlay is shown when prompt is ready
+      setShowInstallOverlay(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     const checkActiveMatch = () => {
       try {
@@ -56,61 +64,121 @@ const Home: React.FC<HomeProps> = ({ config, user, lang }) => {
     };
     checkActiveMatch();
     const interval = setInterval(checkActiveMatch, 2000);
-    return () => clearInterval(interval);
+    
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
+      // Show the install prompt
       deferredPrompt.prompt();
+      // Wait for the user to respond to the prompt
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
-        setShowInstallTip(false);
+        console.log('User accepted the install prompt');
+        setShowInstallOverlay(false);
       }
       setDeferredPrompt(null);
     } else if (isIPhone) {
-      alert(t(lang, 'iphoneTip'));
+      // iPhone instructions are handled by the UI
+    } else {
+      // Fallback: If no prompt, it might be because the browser doesn't support it or already dismissed
+      alert(lang === 'sw' 
+        ? "Sakinisha kupitia Menu ya Browser yako (Tatu dots) kisha 'Install App' au 'Add to Home Screen'." 
+        : "Install via your Browser Menu (Three dots) then select 'Install App' or 'Add to Home Screen'.");
     }
   };
 
-  const dismissInstallTip = () => {
-    setShowInstallTip(false);
-    localStorage.setItem('gs_install_dismissed', 'true');
+  const dismissOverlay = () => {
+    setShowInstallOverlay(false);
+    sessionStorage.setItem('ad_stream_install_dismissed', 'true');
   };
 
   return (
     <div className="space-y-8 md:space-y-16 animate-in fade-in duration-700">
-      {/* Enhanced PWA Install Banner */}
-      {showInstallTip && (
-        <div className="relative overflow-hidden bg-gradient-to-r from-blue-700 to-indigo-800 p-6 rounded-[32px] border-4 border-white/20 shadow-2xl animate-in slide-in-from-top-full duration-500">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-3xl rounded-full -mr-10 -mt-10" />
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
-            <div className="flex items-center gap-5">
-              <div className="bg-white p-3 rounded-2xl shadow-xl flex-shrink-0">
-                <Smartphone size={32} className="text-blue-600" />
+      
+      {/* PROFESSIONAL PWA INSTALL OVERLAY */}
+      {showInstallOverlay && !isStandalone && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-2xl animate-in fade-in duration-500">
+          <div className="max-w-md w-full relative overflow-hidden bg-gradient-to-br from-blue-700 to-indigo-950 rounded-[48px] border-4 border-white/20 shadow-[0_0_100px_rgba(37,99,235,0.6)] p-8 md:p-12">
+            {/* Design elements */}
+            <div className="absolute top-0 left-0 w-48 h-48 bg-blue-500/30 blur-[80px] rounded-full -ml-20 -mt-20" />
+            <div className="absolute bottom-0 right-0 w-48 h-48 bg-indigo-500/30 blur-[80px] rounded-full -mr-20 -mb-20" />
+            
+            <button 
+              onClick={dismissOverlay}
+              className="absolute top-6 right-6 p-3 bg-white/5 hover:bg-white/10 rounded-full text-white/50 transition-all z-20"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="relative z-10 space-y-10 text-center">
+              <div className="w-28 h-28 bg-white rounded-[40px] mx-auto flex items-center justify-center shadow-[0_20px_40px_rgba(0,0,0,0.3)] rotate-3">
+                <div className="w-20 h-20 bg-blue-600 rounded-[28px] flex items-center justify-center">
+                  <Radio size={48} className="text-white animate-pulse" />
+                </div>
               </div>
-              <div className="text-center sm:text-left">
-                <h4 className="text-xl font-black text-white uppercase tracking-tighter leading-none mb-1">
-                  {t(lang, 'installApp')}
-                </h4>
-                <p className="text-blue-100 text-xs font-medium max-w-xs">
-                  {t(lang, 'installDesc')}
+
+              <div className="space-y-4">
+                <h3 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none">
+                  AD STREAM <span className="text-blue-400">APP</span>
+                </h3>
+                <p className="text-blue-100 text-sm md:text-base font-bold opacity-90 leading-relaxed px-4">
+                  {isIPhone 
+                    ? "Sakinisha AD Stream sasa ili uweze kurusha mechi na kutazama soka live kwa urahisi zaidi kwenye iPhone yako." 
+                    : "Pakua App rasmi ya AD Stream uweze kurusha mechi zako na kupata matokeo ya soka popote ulipo!"}
                 </p>
               </div>
-            </div>
-            
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <button 
-                onClick={handleInstallClick}
-                className="flex-1 sm:flex-none bg-white text-blue-700 font-black py-4 px-8 rounded-2xl text-xs uppercase tracking-widest hover:bg-blue-50 transition-all flex items-center justify-center gap-2 shadow-xl"
-              >
-                <Download size={18} /> {t(lang, 'installButton')}
-              </button>
-              <button 
-                onClick={dismissInstallTip} 
-                className="p-4 bg-black/20 hover:bg-black/40 rounded-2xl text-white transition-all"
-              >
-                <X size={20} />
-              </button>
+
+              <div className="space-y-5">
+                {isIPhone ? (
+                  <div className="bg-black/30 p-8 rounded-[36px] border border-white/10 space-y-6 text-left">
+                    <div className="flex items-start gap-5">
+                      <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0">1</div>
+                      <p className="text-xs md:text-sm font-black text-white uppercase tracking-wider flex items-center gap-3">
+                        Gusa <Share size={20} className="text-blue-400" /> (Share Button) chini ya kioo.
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-5">
+                      <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0">2</div>
+                      <p className="text-xs md:text-sm font-black text-white uppercase tracking-wider">
+                        Chagua 'Add to Home Screen'.
+                      </p>
+                    </div>
+                    <div className="pt-2">
+                      <button 
+                        onClick={dismissOverlay}
+                        className="w-full bg-white text-blue-700 font-black py-5 rounded-2xl text-xs uppercase tracking-[0.2em] shadow-2xl active:scale-95 transition-all"
+                      >
+                        NIMELEWA, NGOJA NIFANYE
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <button 
+                      onClick={handleInstallClick}
+                      className="w-full bg-white text-blue-700 font-black py-7 rounded-[32px] text-xl uppercase tracking-widest hover:bg-blue-50 transition-all shadow-[0_20px_40px_rgba(0,0,0,0.4)] active:scale-95 flex items-center justify-center gap-4 group"
+                    >
+                      <Download size={28} className="group-hover:translate-y-1 transition-transform" /> {t(lang, 'installButton')}
+                    </button>
+                    <button 
+                      onClick={dismissOverlay}
+                      className="w-full text-white/40 font-black text-[10px] uppercase tracking-[0.3em] py-2 hover:text-white transition-colors"
+                    >
+                      ENDELEA KWENYE BROWSER
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-center gap-3 pt-4 border-t border-white/5">
+                <CheckCircle2 size={16} className="text-green-500" />
+                <span className="text-[10px] text-blue-200/50 font-black uppercase tracking-[0.2em]">Offical AD Stream PWA • Tanzania</span>
+              </div>
             </div>
           </div>
         </div>
